@@ -4,8 +4,8 @@ import (
 	"errors"
 	"github.com/bwmarrin/discordgo"
 	"github.com/BurntSushi/toml"
-	"morganhein/mangobot/plugins"
-	"morganhein/mangobot/log"
+	"github.com/morganhein/mangokit/log"
+	"github.com/morganhein/mangokit/plugins"
 )
 
 // the plugin level server object so we can reference it when events are fired

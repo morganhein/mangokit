@@ -3,7 +3,7 @@ package discord
 import (
 	"errors"
 	"github.com/bwmarrin/discordgo"
-	"morganhein/mangobot/plugins"
+	"github.com/morganhein/mangokit/plugins"
 )
 
 type guild struct {

@@ -2,9 +2,9 @@ package discord
 
 import (
 	"github.com/bwmarrin/discordgo"
-	"morganhein/mangobot/plugins"
 	"time"
-	"morganhein/mangobot/log"
+	"github.com/morganhein/mangokit/log"
+	"github.com/morganhein/mangokit/plugins"
 )
 
 // event handlers

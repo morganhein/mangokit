@@ -1,8 +1,8 @@
 package main
 
-import "morganhein/mangobot"
+import "github.com/morganhein/mangokit"
 
 func main() {
 	// create a new mango bot
-	mangobot.Start()
+	mangokit.Start()
 }
