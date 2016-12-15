@@ -21,6 +21,7 @@ type conf struct {
 	Username string
 	Password string
 	Token    string
+	Owner    string
 }
 
 type discord struct {

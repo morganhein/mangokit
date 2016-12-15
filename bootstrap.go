@@ -45,5 +45,5 @@ func Start() () {
 		Brain.AddEventTriggers(es, p)
 	}
 	log.Debug("Bootstrapping finished.")
-	Brain.Loop()
+	Core.Loop()
 }

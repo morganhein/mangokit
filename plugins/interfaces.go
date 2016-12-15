@@ -1,5 +1,10 @@
 package plugins
 
+type Brain interface {
+	Leave(Contexter)
+	Quit()
+}
+
 type Contexter interface {
 	// is this context currently messageable (offline, or the base server context which can't rx messages)
 	Messageable() bool

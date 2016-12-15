@@ -5,9 +5,10 @@ import (
 	"github.com/morganhein/mangokit/plugins"
 	"github.com/morganhein/stacknqueue"
 	"sync"
+	"os"
 )
 
-type MangoBrain struct {
+type core struct {
 	input            *stacknqueue.StackNQueue
 	output           *stacknqueue.StackNQueue
 	subscribedEvents map[int][]plugins.SkillPlugineers
@@ -19,11 +20,11 @@ const (
 	RESUME
 )
 
-var Brain *MangoBrain
+var Core *core
 
 func init() {
-	Brain = &MangoBrain{
-		// give the brain a little memory
+	Core = &core{
+		// give the core a little memory
 		input: stacknqueue.NewStackNQueue(true),
 		output: stacknqueue.NewStackNQueue(true),
 		// create the event types to skill association map
@@ -31,7 +32,7 @@ func init() {
 	}
 }
 
-func (b *MangoBrain) Loop() {
+func (c *core) Loop() {
 	// create the communication channels
 	// anyone know of a better way to do this? it feels clunky
 	controlListen := make(chan int)
@@ -41,26 +42,26 @@ func (b *MangoBrain) Loop() {
 
 	wg := sync.WaitGroup{}
 	wg.Add(3)
-	go b.listen(&wg, controlListen)
+	go c.listen(&wg, controlListen)
 	//go b.think(&wg, controlThink)
-	go b.thought(&wg, controlThought)
-	go b.speak(&wg, controlSpeak)
+	go c.thought(&wg, controlThought)
+	go c.speak(&wg, controlSpeak)
 	log.Debug("Waiting...")
 	wg.Wait()
 }
 
-func (b *MangoBrain) AddEventTriggers(e []int, skill plugins.SkillPlugineers) {
+func (c *core) AddEventTriggers(e []int, skill plugins.SkillPlugineers) {
 	for _, v := range e {
-		if pls, exists := b.subscribedEvents[v]; exists {
-			b.subscribedEvents[v] = append(pls, skill)
+		if pls, exists := c.subscribedEvents[v]; exists {
+			c.subscribedEvents[v] = append(pls, skill)
 		} else {
-			b.subscribedEvents[v] = []plugins.SkillPlugineers{skill}
+			c.subscribedEvents[v] = []plugins.SkillPlugineers{skill}
 		}
 	}
 }
 
 // listen takes new events from networks and stores them in short term memory to be processed by a skill
-func (b *MangoBrain) listen(wg *sync.WaitGroup, control chan int) {
+func (b *core) listen(wg *sync.WaitGroup, control chan int) {
 	defer wg.Done()
 
 	log.Debug("Starting up listener.")
@@ -77,9 +78,13 @@ func (b *MangoBrain) listen(wg *sync.WaitGroup, control chan int) {
 				}
 			// check for any new events
 			case event := <-c.FromPlugin:
-				log.Debug("Received network event: " + event.Data)
+				log.Debug("Received network event: " + event.Raw)
 			// add the connection this event came from onto the event
 				event.Connection = c
+			// figure out if this is a botcommand
+				_ = plugins.PopulateCmd(&event)
+			// Process this in case it's a low-level control command not handled by a plugin
+			//	b.preProcess(&event)
 				b.think(&event)
 			}
 		}
@@ -87,14 +92,14 @@ func (b *MangoBrain) listen(wg *sync.WaitGroup, control chan int) {
 }
 
 // think figures out which skills plugins want this event
-func (b *MangoBrain) think(e *plugins.Event) {
-	for _, p := range b.subscribedEvents[e.Type] {
+func (c *core) think(e *plugins.Event) {
+	for _, p := range c.subscribedEvents[e.Type] {
 		go p.NewEvent(*e)
 	}
 }
 
 // thought takes new responses from skills and adds them to short term memory to be sent to the networks
-func (b *MangoBrain) thought(wg *sync.WaitGroup, control chan int) {
+func (c *core) thought(wg *sync.WaitGroup, control chan int) {
 	defer wg.Done()
 
 	log.Debug("Thoughts incoming.")
@@ -111,9 +116,9 @@ func (b *MangoBrain) thought(wg *sync.WaitGroup, control chan int) {
 				}
 			// check for any new events
 			case event := <-p.FromPlugin:
-				log.Debug("Received skill response: " + event.Data)
+				log.Debug("Received skill response: " + event.Message)
 			// add the event to be processed by the skills
-				b.output.Push(event)
+				c.output.Push(event)
 			}
 		}
 	}
@@ -121,14 +126,14 @@ func (b *MangoBrain) thought(wg *sync.WaitGroup, control chan int) {
 }
 
 // speak takes thoughts and figures out where they need to be sent
-func (b *MangoBrain) speak(wg *sync.WaitGroup, control chan int) {
+func (c *core) speak(wg *sync.WaitGroup, control chan int) {
 	defer wg.Done()
 
 	log.Debug("Mouthpiece warming up.")
 
 	Loop:
 	for {
-		if next := b.output.Pop(); next != nil {
+		if next := c.output.Pop(); next != nil {
 			response := next.(plugins.Event)
 			// send the response back up the connection through the ToPlugin chan
 			response.Connection.ToPlugin <- response
@@ -142,6 +147,14 @@ func (b *MangoBrain) speak(wg *sync.WaitGroup, control chan int) {
 		}
 	}
 	log.Debug("Shutting up.")
+}
+
+func (c *core) Quit() {
+	// send disconnect commands to all networks
+	for _, p := range plugins.NetworkPlugins {
+		p.Disconnect()
+	}
+	os.Exit(0)
 }
 
 func notFull(c chan plugins.Event) bool {

@@ -1,6 +1,8 @@
 package plugins
 
-import "time"
+import (
+	"time"
+)
 
 const (
 	Network = iota
@@ -11,7 +13,9 @@ type Event struct {
 	Context    Contexter
 	// Type is event Type (verb), like Connected, Messaged, Quit, etc.
 	Type       int
-	Data       string
+	Cmd        string
+	Message    string
+	Raw        string
 	Time       time.Time
 	Who        *Who
 	Connection *Connection

@@ -15,7 +15,7 @@ func onConnect(s *discordgo.Session, _ *discordgo.Connect) {
 		Time: time.Now(),
 		Context: &guild{s: s},
 		Type: events.CONNECTED,
-		Data: "Connected to " + g,
+		Raw: "Connected to " + g,
 	}
 	toApp <- event
 }
@@ -25,6 +25,7 @@ func onMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Author.ID == server.me.ID {
 		return
 	}
+	log.Debug("Received new message from: " + m.Author.Username + ":" + m.Author.ID)
 
 	cid, err := s.Channel(m.ChannelID)
 
@@ -46,7 +47,7 @@ func onMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 		Time: time.Now(),
 		Context: channel,
 		Type: events.MESSAGE,
-		Data: m.Message.Content,
+		Raw: m.Message.Content,
 		Who: &plugins.Who{
 			Name: m.Author.Username,
 			Id: m.Author.ID,

@@ -4,13 +4,13 @@ import (
 	"os"
 	"github.com/morganhein/mangokit/log"
 	"path"
+	"strings"
+	"github.com/morganhein/mangokit/events"
 )
 
+var brain Brain
 var NetworkPlugins = make(map[*Connection]NetworkPlugineers)
 var SkillPlugins = make(map[*Connection]SkillPlugineers)
-
-
-
 
 func RegisterNetworkPlugin(name string, plugin NetworkPlugineers) {
 	c := registerNewPlugin(name, Network)
@@ -57,4 +57,31 @@ func registerNewPlugin(name string, t int) *Connection {
 		Dir: dir,
 	}
 	return c
+}
+
+func PopulateCmd(e *Event) (error) {
+	// Is this a message?
+	if e.Type != events.PRIVATEMESSAGE && e.Type != events.PUBLICMESSAGE && e.Type != events.MESSAGE {
+		return nil
+	}
+	if !strings.HasPrefix(e.Raw, ".") {
+		e.Message = e.Raw
+		return nil
+	}
+	if !strings.Contains(e.Raw, ":") {
+		e.Message = e.Raw
+		return nil
+	}
+	split := strings.SplitN(e.Raw, ":", 2)
+
+	// sanity checking here, not sure it's required
+	if len(split) != 2 {
+		e.Message = e.Raw
+		return nil
+	}
+	e.Cmd = split[0][1:]
+	e.Message = split[1]
+	e.Type = events.BOTMESSAGE
+	log.Debug("Found a new command: " + e.Cmd)
+	return nil
 }
