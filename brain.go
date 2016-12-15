@@ -75,7 +75,7 @@ func (b *MangoBrain) listen(wg *sync.WaitGroup, control chan int) {
 				case QUIT:
 					break Loop
 				}
-			// check for any new events                                                                                       e
+			// check for any new events
 			case event := <-c.FromPlugin:
 				log.Debug("Received network event: " + event.Data)
 			// add the connection this event came from onto the event
@@ -88,7 +88,7 @@ func (b *MangoBrain) listen(wg *sync.WaitGroup, control chan int) {
 
 // think figures out which skills plugins want this event
 func (b *MangoBrain) think(e *plugins.Event) {
-	for _, p := range plugins.SkillPlugins {
+	for _, p := range b.subscribedEvents[e.Type] {
 		go p.NewEvent(*e)
 	}
 }
