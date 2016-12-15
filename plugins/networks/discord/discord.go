@@ -24,7 +24,6 @@ type conf struct {
 }
 
 type discord struct {
-	*plugins.Plugin
 	session *discordgo.Session
 	me      *discordgo.User
 }
@@ -42,8 +41,6 @@ func (d *discord) Setup(c *plugins.Connection) (error) {
 }
 
 func (d *discord) LoadConfig(location string) (error) {
-	log.Debug("Stuff")
-	// todo: handle username/pass and OAuth2
 	log.Debug("Loading configuration from " + location)
 	if _, err := toml.DecodeFile(location, &config); err != nil {
 		log.Error("Could not load configuration file: " + err.Error())

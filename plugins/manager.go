@@ -1,47 +1,16 @@
 package plugins
 
 import (
-	"time"
 	"os"
 	"github.com/morganhein/mangokit/log"
 	"path"
 )
 
-const (
-	Network = iota
-	Skill
-)
-
 var NetworkPlugins = make(map[*Connection]NetworkPlugineers)
 var SkillPlugins = make(map[*Connection]SkillPlugineers)
 
-type Event struct {
-	Context Contexter
-	// Type is event Type (verb), like Connected, Messaged, Quit, etc.
-	Type    string
-	Data    string
-	Time    time.Time
-	Who     *Who
-}
 
-type Who struct {
-	Id          string
-	Name        string
-	Permissions string
-}
 
-type Connection struct {
-	// Name of the plugin. The plugin MUST reside under /plugins/networks/<name>/ or /plugins/skills/<name>/
-	Name       string
-	// Send to plugin
-	ToPlugin   chan Event
-	// Receive from plugin
-	FromPlugin chan Event
-	// Directory the plugin exists in
-	Dir        string
-	// The Type of the plugin
-	Type       int
-}
 
 func RegisterNetworkPlugin(name string, plugin NetworkPlugineers) {
 	c := registerNewPlugin(name, Network)
@@ -52,6 +21,7 @@ func RegisterNetworkPlugin(name string, plugin NetworkPlugineers) {
 
 func RegisterSkillPlugin(name string, plugin SkillPlugineers) {
 	c := registerNewPlugin(name, Skill)
+
 	if c != nil {
 		SkillPlugins[c] = plugin
 	}
@@ -88,5 +58,3 @@ func registerNewPlugin(name string, t int) *Connection {
 	}
 	return c
 }
-
-type Plugin struct{}

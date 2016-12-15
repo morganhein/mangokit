@@ -36,12 +36,18 @@ type NetworkPlugineers interface {
 	Connected() (bool)
 	// Disconnect if still connected, and reconnect
 	Reconnect() error
-	// Force load a configuration file
+	// Force load a configuration file. This normally should only be called by Setup()
 	LoadConfig(location string) error
 }
 
 type SkillPlugineers interface {
-
+	//Setup(toPlugin chan *Event, fromPlugin chan *Event)
+	NewEvent(Event)
+	// Startup by loading config, and retrieve the list of events to listen to.
+	Setup(*Connection) ([]int, error)
+	// Force load a configuration file. This normally should be called by Setup, but may be used to
+	// over-ride a config.
+	LoadConfig(location string) error
 }
 
 type Logger interface {

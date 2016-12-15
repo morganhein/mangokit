@@ -1,1 +1,2 @@
-Token = "858c143bf9a64f568bdc536b8e06697a"
+#rename this file to config.toml
+Token = "token here"

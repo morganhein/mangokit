@@ -5,6 +5,7 @@ import (
 	"time"
 	"github.com/morganhein/mangokit/log"
 	"github.com/morganhein/mangokit/plugins"
+	"github.com/morganhein/mangokit/events"
 )
 
 // event handlers
@@ -13,7 +14,7 @@ func onConnect(s *discordgo.Session, _ *discordgo.Connect) {
 	event := plugins.Event{
 		Time: time.Now(),
 		Context: &guild{s: s},
-		Type: "Connected",
+		Type: events.CONNECTED,
 		Data: "Connected to " + g,
 	}
 	toApp <- event
@@ -44,7 +45,7 @@ func onMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 	event := plugins.Event{
 		Time: time.Now(),
 		Context: channel,
-		Type: "message",
+		Type: events.MESSAGE,
 		Data: m.Message.Content,
 		Who: &plugins.Who{
 			Name: m.Author.Username,
