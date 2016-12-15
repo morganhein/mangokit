@@ -8,7 +8,7 @@ import (
 	"github.com/morganhein/mangokit/events"
 )
 
-var brain Brain
+var Core CoreFramework
 var NetworkPlugins = make(map[*Connection]NetworkPlugineers)
 var SkillPlugins = make(map[*Connection]SkillPlugineers)
 
@@ -81,7 +81,7 @@ func PopulateCmd(e *Event) (error) {
 	}
 	e.Cmd = split[0][1:]
 	e.Message = split[1]
-	e.Type = events.BOTMESSAGE
+	e.Type = events.BOTCMD
 	log.Debug("Found a new command: " + e.Cmd)
 	return nil
 }

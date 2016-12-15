@@ -9,7 +9,7 @@ const (
 	EXITEDCHANNEL //A member, or this bot, have exited a channel
 	ANNOUNCEMENT //A server/guild wide announcement was received
 	MESSAGE //A generic message, public/private is unknown
-	BOTMESSAGE //A message the bot is supposed to reply to, from any context, with or without parameters
+	BOTCMD //A command the bot is supposed to reply to, from any context, with or without parameters
 	PUBLICMESSAGE //A general message seen in a public context
 	PRIVATEMESSAGE //A message seen in a private context
 	ACTION //An action seen in any context
@@ -21,4 +21,5 @@ const (
 	BANNED //Any member, including this bot, is banned from the server
 	KICKED //Any member, including this bot, is kicked from the server
 	SHUTDOWN //Called just prior to a full shutdown of the server
+	ALL //Helper event which encapsulates all other events
 )

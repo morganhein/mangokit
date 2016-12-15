@@ -1,6 +1,6 @@
 package plugins
 
-type Brain interface {
+type CoreFramework interface {
 	Leave(Contexter)
 	Quit()
 }

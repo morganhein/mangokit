@@ -15,5 +15,6 @@ func TestPopulateCmd(t *testing.T) {
 	assert.Equal(t, err, nil, "Should not return an error.")
 	assert.Equal(t, "yt", event.Cmd, "Command should be yt.")
 	assert.Equal(t, "attribute", event.Message, "Attribute should be attribute.")
+	assert.Equal(t, events.BOTCMD, event.Type, "Event type should be a botmessage.")
 
 }

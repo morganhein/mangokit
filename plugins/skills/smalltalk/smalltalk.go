@@ -62,7 +62,7 @@ func (s *smalltalk) Setup(c *plugins.Connection) ([]int, error) {
 	if err != nil {
 		return []int{}, err
 	}
-	return []int{events.BOTMESSAGE}, nil
+	return []int{events.BOTCMD}, nil
 }
 
 func (s *smalltalk) LoadConfig(location string) (error) {

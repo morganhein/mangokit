@@ -6,6 +6,7 @@ import (
 	"github.com/morganhein/stacknqueue"
 	"sync"
 	"os"
+	"github.com/morganhein/mangokit/events"
 )
 
 type core struct {
@@ -30,6 +31,7 @@ func init() {
 		// create the event types to skill association map
 		subscribedEvents: make(map[int][]plugins.SkillPlugineers),
 	}
+	plugins.Core = Core
 }
 
 func (c *core) Loop() {
@@ -96,6 +98,11 @@ func (c *core) think(e *plugins.Event) {
 	for _, p := range c.subscribedEvents[e.Type] {
 		go p.NewEvent(*e)
 	}
+	//todo: a skill could potentially receive events twice+ if subbed to ALL+1
+	for _, p := range c.subscribedEvents[events.ALL] {
+		go p.NewEvent(*e)
+	}
+
 }
 
 // thought takes new responses from skills and adds them to short term memory to be sent to the networks
@@ -147,6 +154,10 @@ func (c *core) speak(wg *sync.WaitGroup, control chan int) {
 		}
 	}
 	log.Debug("Shutting up.")
+}
+
+func (c *core) Leave(pc plugins.Contexter) {
+	//todo: implement this stub
 }
 
 func (c *core) Quit() {

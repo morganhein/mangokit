@@ -7,6 +7,7 @@ import (
 
 var Logger *logging.Logger
 
+//todo: read env variable so we can stop printing these messages when unit testing
 func init() {
 	Logger = logging.MustGetLogger("mango")
 	var format = logging.MustStringFormatter(

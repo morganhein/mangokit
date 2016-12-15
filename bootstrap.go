@@ -5,6 +5,7 @@ import (
 	"github.com/morganhein/mangokit/plugins"
 	_ "github.com/morganhein/mangokit/plugins/networks/discord"
 	_ "github.com/morganhein/mangokit/plugins/skills/smalltalk"
+	_ "github.com/morganhein/mangokit/plugins/skills/brain"
 )
 
 
@@ -42,7 +43,7 @@ func Start() () {
 			log.Critical(err.Error())
 			continue
 		}
-		Brain.AddEventTriggers(es, p)
+		Core.AddEventTriggers(es, p)
 	}
 	log.Debug("Bootstrapping finished.")
 	Core.Loop()
