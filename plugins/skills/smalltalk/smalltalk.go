@@ -2,7 +2,6 @@ package skills
 
 import (
 	"net/url"
-	"fmt"
 	"encoding/json"
 	"time"
 	"net/http"
@@ -77,7 +76,7 @@ func (s *smalltalk) LoadConfig(location string) (error) {
 
 func (s *smalltalk) requestThought(str string) (*Thought, error) {
 	url := "https://api.api.ai/v1/query?lang=en&v=20150910&sessionId=123&query=" + url.QueryEscape(str)
-	fmt.Println("Requesting: " + url)
+	log.Debug("Requesting: " + url)
 	client := &http.Client{}
 	req, _ := http.NewRequest("GET", url, nil)
 	req.Header.Set("Authorization", "Bearer " + config.Token)
@@ -93,6 +92,6 @@ func (s *smalltalk) requestThought(str string) (*Thought, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("Received thought: " + thought.Result.Fulfillment.Speech)
+	log.Debug("Received thought: " + thought.Result.Fulfillment.Speech)
 	return &thought, nil
 }
