@@ -13,8 +13,7 @@ type conf struct {
 
 type brain struct {
 	*plugins.Plugin
-	fromApp chan *plugins.Event
-	toApp   chan *plugins.Event
+	conn *plugins.Connection
 }
 
 var _b *brain
@@ -26,20 +25,27 @@ func init() {
 	config = conf{}
 }
 
-func (b *brain) NewEvent(e plugins.Event) {
-	if strings.ToLower(e.Cmd) == "quit" {
-		e.Context.Say("You got it boss. Bye!")
-		plugins.Core.Quit()
-	}
-}
-
 func (b *brain) Setup(c *plugins.Connection) error {
 	c.Events = []int{events.BOTCMD}
+	b.conn = c
 	return nil
 }
 
 func (b *brain) Start() error {
-
+	for {
+		select {
+		case e := <-b.conn.ToPlugin:
+			if strings.HasPrefix(e.Cmd, "!") {
+				msg := e.Cmd[1:]
+				switch msg {
+				case "quit":
+					e.Context.Say("Ok fine. Bye!")
+					plugins.Shutdown("Requested shutdown by " + e.Who.Name)
+					return nil
+				}
+			}
+		}
+	}
 	return nil
 }
 

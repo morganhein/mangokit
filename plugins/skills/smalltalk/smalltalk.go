@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/BurntSushi/toml"
@@ -72,12 +73,15 @@ func (s *smalltalk) Start() error {
 	for {
 		select {
 		case e := <-s.conn.ToPlugin:
-			log.Debug("Requesting a new thought.")
-			t, err := s.requestThought(e.Cmd)
-			if err != nil {
-				log.Error("Error retrieving a thought. Try thinking harder.")
+			if strings.HasPrefix(e.Cmd, "?") {
+				msg := e.Cmd[1:]
+				log.Debug("Requesting a new thought.")
+				t, err := s.requestThought(msg)
+				if err != nil {
+					log.Error("Error retrieving a thought. Try thinking harder.")
+				}
+				e.Context.Say(t.Result.Fulfillment.Speech)
 			}
-			e.Context.Say(t.Result.Fulfillment.Speech)
 		}
 	}
 	log.Debug("Smalltalk exiting.")

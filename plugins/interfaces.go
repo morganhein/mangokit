@@ -43,6 +43,8 @@ type Plugineers interface {
 	Reconnect() error
 	// Force load a configuration file. This normally should only be called by Setup()
 	LoadConfig(location string) error
+	// Shutdown all running processes gracefully
+	Shutdown()
 }
 
 type Logger interface {

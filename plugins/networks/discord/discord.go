@@ -124,3 +124,7 @@ func (d *discord) getChannelByName(guild, channel string) (*discordgo.Channel, e
 	}
 	return nil, errors.New("Could not find a guild/channel combination with that information.")
 }
+
+func (d *discord) Shutdown() {
+	d.session.Close()
+}

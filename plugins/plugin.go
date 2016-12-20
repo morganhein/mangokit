@@ -54,3 +54,7 @@ func (p *Plugin) LoadConfig(location string) error {
 	log.Debug("Loading configuration from " + location)
 	return nil
 }
+
+func (p *Plugin) Shutdown() {
+
+}

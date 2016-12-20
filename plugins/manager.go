@@ -86,3 +86,14 @@ func PopulateCmd(e *Event) error {
 	log.Debug("Found a new command: " + e.Cmd)
 	return nil
 }
+
+func Shutdown(reason string) {
+	for _, p := range SkillPlugins {
+		p.Shutdown()
+	}
+	for _, p := range NetworkPlugins {
+		p.Shutdown()
+	}
+	//todo graceful shutdown
+	os.Exit(0)
+}
