@@ -1,9 +1,10 @@
 package skills
 
 import (
-	"github.com/morganhein/mangokit/plugins"
-	"github.com/morganhein/mangokit/events"
 	"strings"
+
+	"github.com/morganhein/mangokit/events"
+	"github.com/morganhein/mangokit/plugins"
 )
 
 type conf struct {
@@ -11,6 +12,7 @@ type conf struct {
 }
 
 type brain struct {
+	*plugins.Plugin
 	fromApp chan *plugins.Event
 	toApp   chan *plugins.Event
 }
@@ -20,7 +22,7 @@ var config conf
 
 func init() {
 	_b = &brain{}
-	plugins.RegisterSkillPlugin("brain", _b)
+	plugins.RegisterPlugin("brain", plugins.Skill, _b)
 	config = conf{}
 }
 
@@ -31,10 +33,16 @@ func (b *brain) NewEvent(e plugins.Event) {
 	}
 }
 
-func (b *brain) Setup(c *plugins.Connection) ([]int, error) {
-	return []int{events.BOTCMD}, nil
+func (b *brain) Setup(c *plugins.Connection) error {
+	c.Events = []int{events.BOTCMD}
+	return nil
 }
 
-func (b *brain) LoadConfig(location string) (error) {
+func (b *brain) Start() error {
+
+	return nil
+}
+
+func (b *brain) LoadConfig(location string) error {
 	return nil
 }

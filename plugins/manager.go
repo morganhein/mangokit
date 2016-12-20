@@ -2,24 +2,37 @@ package plugins
 
 import (
 	"os"
-	"github.com/morganhein/mangokit/log"
-	"path"
 	"strings"
+
+	"path/filepath"
+
 	"github.com/morganhein/mangokit/events"
+	"github.com/morganhein/mangokit/log"
 )
 
 var Core CoreFramework
-var NetworkPlugins = make(map[*Connection]NetworkPlugineers)
-var SkillPlugins = make(map[*Connection]SkillPlugineers)
+var NetworkPlugins = make(map[*Connection]Plugineers)
+var SkillPlugins = make(map[*Connection]Plugineers)
 
-func RegisterNetworkPlugin(name string, plugin NetworkPlugineers) {
-	c := registerNewPlugin(name, Network)
-	if c != nil {
-		NetworkPlugins[c] = plugin
+func RegisterPlugin(name string, pluginType int, plugin Plugineers) {
+	switch pluginType {
+	case 0:
+		registerNetworkPlugin(name, plugin)
+	case 1:
+		registerSkillPlugin(name, plugin)
 	}
 }
 
-func RegisterSkillPlugin(name string, plugin SkillPlugineers) {
+func registerNetworkPlugin(name string, plugin Plugineers) {
+	c := registerNewPlugin(name, Network)
+
+	if c != nil {
+		NetworkPlugins[c] = plugin
+		c.Plugin = plugin
+	}
+}
+
+func registerSkillPlugin(name string, plugin Plugineers) {
 	c := registerNewPlugin(name, Skill)
 
 	if c != nil {
@@ -43,23 +56,23 @@ func registerNewPlugin(name string, t int) *Connection {
 
 	switch t {
 	case Network:
-		dir = path.Join(dir, "plugins", "networks", name, "config.toml")
+		dir = filepath.Join(dir, "plugins", "networks", name, "config.toml")
 	case Skill:
-		dir = path.Join(dir, "plugins", "skills", name, "config.toml")
+		dir = filepath.Join(dir, "plugins", "skills", name, "config.toml")
 	}
 	log.Debug("Creating plugin from dir: " + dir)
 
 	c := &Connection{
-		Name: name,
-		ToPlugin: toPlugin,
-		FromPlugin:fromPlugin,
-		Type: t,
-		Dir: dir,
+		Name:       name,
+		ToPlugin:   toPlugin,
+		FromPlugin: fromPlugin,
+		Type:       t,
+		Dir:        dir,
 	}
 	return c
 }
 
-func PopulateCmd(e *Event) (error) {
+func PopulateCmd(e *Event) error {
 	// Is this a message?
 	if e.Type != events.PRIVATEMESSAGE && e.Type != events.PUBLICMESSAGE && e.Type != events.MESSAGE {
 		return nil
@@ -68,19 +81,7 @@ func PopulateCmd(e *Event) (error) {
 		e.Message = e.Raw
 		return nil
 	}
-	if !strings.Contains(e.Raw, ":") {
-		e.Message = e.Raw
-		return nil
-	}
-	split := strings.SplitN(e.Raw, ":", 2)
-
-	// sanity checking here, not sure it's required
-	if len(split) != 2 {
-		e.Message = e.Raw
-		return nil
-	}
-	e.Cmd = split[0][1:]
-	e.Message = split[1]
+	e.Cmd = e.Raw[1:]
 	e.Type = events.BOTCMD
 	log.Debug("Found a new command: " + e.Cmd)
 	return nil

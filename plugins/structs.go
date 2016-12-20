@@ -10,7 +10,7 @@ const (
 )
 
 type Event struct {
-	Context    Contexter
+	Context Contexter
 	// Type is event Type (verb), like Connected, Messaged, Quit, etc.
 	Type       int
 	Cmd        string
@@ -29,13 +29,17 @@ type Who struct {
 
 type Connection struct {
 	// Name of the plugin. The plugin MUST reside under /plugins/networks/<name>/ or /plugins/skills/<name>/
-	Name       string
-	// Send to plugin
-	ToPlugin   chan Event
-	// Receive from plugin
+	Name string
+	// Reference to the plugin implementation
+	Plugin Plugineers
+	// ToPlugin receives events from the main handler
+	ToPlugin chan Event
+	// FromPlugin sends events to the main handler
 	FromPlugin chan Event
-	// Directory the plugin exists in
-	Dir        string
-	// The Type of the plugin
-	Type       int
+	// Dir is the directory the plugin exists in
+	Dir string
+	// Type of the plugin (0:Network,1:Skill)
+	Type int
+	// Events is the list of events the plugin wants to receive.
+	Events []int
 }

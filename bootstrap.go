@@ -3,11 +3,10 @@ package mangokit
 import (
 	"github.com/morganhein/mangokit/log"
 	"github.com/morganhein/mangokit/plugins"
-	_ "github.com/morganhein/mangokit/plugins/networks/discord"
-	_ "github.com/morganhein/mangokit/plugins/skills/smalltalk"
+	_ "github.com/morganhein/mangokit/plugins/networks/discord" // all blank imports register the plugin
 	_ "github.com/morganhein/mangokit/plugins/skills/brain"
+	_ "github.com/morganhein/mangokit/plugins/skills/smalltalk"
 )
-
 
 /*
 TODO: implement permissions system
@@ -15,7 +14,7 @@ TODO: logging for all actions, to a log and to the screen
 TODO: implement plugging into twitch.tv, discord, etc
 */
 
-func Start() () {
+func Start() {
 	log.Debug("Bootstrap has begun.")
 
 	// Load the basic configuration
@@ -30,7 +29,7 @@ func Start() () {
 			continue
 		}
 		// Have the p connect
-		if err := p.Connect(); err != nil {
+		if err := p.Start(); err != nil {
 			log.Critical(err.Error())
 			continue
 		}
@@ -38,12 +37,14 @@ func Start() () {
 	for c, p := range plugins.SkillPlugins {
 		log.Debug("Setting up plugin " + c.Name)
 		// Setup the plugin
-		es, err := p.Setup(c)
+		err := p.Setup(c)
 		if err != nil {
 			log.Critical(err.Error())
 			continue
 		}
-		Core.AddEventTriggers(es, p)
+		Core.AddEventTriggers(c.Events, c)
+		go p.Start()
+
 	}
 	log.Debug("Bootstrapping finished.")
 	Core.Loop()

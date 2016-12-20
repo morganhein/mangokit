@@ -1,0 +1,5 @@
+// Place your settings in this file to overwrite default and user settings.
+{
+    "go.gopath": "C:\\Users\\mhein\\Lang\\Go\\repo;C:\\Users\\mhein\\Projects\\_personal\\go",
+    "go.useCodeSnippetsOnFunctionSuggest": true
+}

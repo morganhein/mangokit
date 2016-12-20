@@ -2,59 +2,59 @@ package discord
 
 import (
 	"errors"
-	"github.com/bwmarrin/discordgo"
+
 	"github.com/BurntSushi/toml"
+	"github.com/bwmarrin/discordgo"
 	"github.com/morganhein/mangokit/log"
 	"github.com/morganhein/mangokit/plugins"
 )
 
-// the plugin level server object so we can reference it when events are fired
-var server *discord
-// events we receive from the main program
-var fromApp chan plugins.Event
-// events we want to send to the main program
-var toApp chan plugins.Event
-// the config
-var config conf
+type discord struct {
+	*plugins.Plugin
+	// events we want to send/receive to/from the main program
+	// saved globally due to the way DiscordGo passes events
+	con     *plugins.Connection
+	session *discordgo.Session
+	me      *discordgo.User
+}
 
-type conf struct {
+var disc *discord
+
+// the config
+var conf config
+
+type config struct {
 	Username string
 	Password string
 	Token    string
 	Owner    string
 }
 
-type discord struct {
-	session *discordgo.Session
-	me      *discordgo.User
-}
-
 func init() {
-	server = &discord{}
-	plugins.RegisterNetworkPlugin("discord", server)
+	disc = &discord{}
+	plugins.RegisterPlugin("discord", plugins.Network, disc)
 }
 
-func (d *discord) Setup(c *plugins.Connection) (error) {
-	fromApp = c.ToPlugin
-	toApp = c.FromPlugin
+func (d *discord) Setup(c *plugins.Connection) error {
+	d.con = c
 	// Load configuration
-	return server.LoadConfig(c.Dir)
+	return disc.LoadConfig(c.Dir)
 }
 
-func (d *discord) LoadConfig(location string) (error) {
+func (d *discord) LoadConfig(location string) error {
 	log.Debug("Loading configuration from " + location)
-	if _, err := toml.DecodeFile(location, &config); err != nil {
+	if _, err := toml.DecodeFile(location, &conf); err != nil {
 		log.Error("Could not load configuration file: " + err.Error())
 		return err
 	}
-	log.Debug("Loaded configuration file with Token: " + config.Token)
+	log.Debug("Loaded configuration file with Token: " + conf.Token)
 	return nil
 }
 
-func (d *discord) Connect() (err error) {
+func (d *discord) Start() (err error) {
 	log.Debug("Connecting to Discord.")
 	// Connect to discord
-	d.session, err = discordgo.New("Bot " + config.Token)
+	d.session, err = discordgo.New("Bot " + conf.Token)
 
 	if err != nil {
 		log.Error(err.Error())
@@ -62,17 +62,19 @@ func (d *discord) Connect() (err error) {
 	}
 
 	// Get the account information.
-	d.me, err = server.session.User("@me")
+	d.me, err = d.session.User("@me")
+	//server.session.User("@me")
 	if err != nil {
 		return
 	}
 
 	// Attach event handlers
-	d.session.AddHandler(onConnect)
-	d.session.AddHandler(onMessage)
-
+	d.session.AddHandler(d.onConnect)
+	d.session.AddHandler(d.onMessage)
+	log.Debug("Discord started.")
 	// Open the websocket connection.
 	err = d.session.Open()
+
 	return
 }
 
@@ -84,10 +86,14 @@ func (d *discord) Reconnect() error {
 	if err := d.Disconnect(); err != nil {
 		return err
 	}
-	if err := d.Connect(); err != nil {
+	if err := d.connect(); err != nil {
 		return err
 	}
 	return nil
+}
+
+func (d *discord) connect() error {
+	return d.session.Open()
 }
 
 func (d *discord) Connected() bool {
@@ -102,7 +108,7 @@ func (d *discord) GetContext(search interface{}) (plugins.Contexter, error) {
 func (d *discord) getChannelByName(guild, channel string) (*discordgo.Channel, error) {
 	guilds := d.session.State.Guilds
 	// If we haven't yet received info on the guilds yet, populate it
-	if (len(guilds) == 0) {
+	if len(guilds) == 0 {
 		// todo: figure out how to load guilds on demand, or wait until the guild info has
 		// been received and then return the message
 		return nil, errors.New("Guild information not yet received. Please wait and try again.")
@@ -110,7 +116,7 @@ func (d *discord) getChannelByName(guild, channel string) (*discordgo.Channel, e
 	for _, g := range guilds {
 		if g.Name == guild {
 			for _, ch := range g.Channels {
-				if (ch.Name == channel) {
+				if ch.Name == channel {
 					return ch, nil
 				}
 			}
