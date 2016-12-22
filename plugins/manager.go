@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 
 	"github.com/morganhein/mangokit/events"
-	"github.com/morganhein/mangokit/log"
 )
 
 var Core CoreFramework

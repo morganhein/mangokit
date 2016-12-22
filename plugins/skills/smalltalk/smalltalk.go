@@ -10,7 +10,6 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/morganhein/mangokit/events"
-	"github.com/morganhein/mangokit/log"
 	"github.com/morganhein/mangokit/plugins"
 )
 
