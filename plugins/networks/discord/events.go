@@ -56,3 +56,18 @@ func (d *discord) onMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 	disc.con.FromPlugin <- event
 }
+
+func (d *discord) onChannelJoin(s *discordgo.Session, c *discordgo.ChannelCreate) {
+	channel := &channel{
+		s: s,
+		c: c.Channel,
+	}
+
+	event := plugins.Event{
+		Time:    time.Now(),
+		Context: channel,
+		Type:    events.CREATEDCHANNEL,
+	}
+
+	disc.con.FromPlugin <- event
+}

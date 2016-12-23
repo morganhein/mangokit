@@ -5,12 +5,12 @@ import (
 )
 
 const (
-	Network = iota
-	Skill
+	int Network = iota
+	int Skill
 )
 
 type Event struct {
-	Context Contexter
+	Context    Contexter
 	// Type is event Type (verb), like Connected, Messaged, Quit, etc.
 	Type       int
 	Cmd        string
