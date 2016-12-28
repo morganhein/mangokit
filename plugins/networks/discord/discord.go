@@ -5,6 +5,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/bwmarrin/discordgo"
+	"github.com/morganhein/mangokit/events"
 	"github.com/morganhein/mangokit/plugins"
 )
 
@@ -12,15 +13,10 @@ type discord struct {
 	*plugins.Plugin
 	// events we want to send/receive to/from the main program
 	// saved globally due to the way DiscordGo passes events
-	con     *plugins.Connection
 	session *discordgo.Session
 	me      *discordgo.User
+	conf    config
 }
-
-var disc *discord
-
-// the config
-var conf config
 
 type config struct {
 	Username string
@@ -29,34 +25,34 @@ type config struct {
 	Owner    string
 }
 
-var log plugins.Logger
+var disc *discord
+var log = plugins.GetLogger()
 
 func init() {
-	disc = &discord{}
-	plugins.RegisterPlugin("discord", plugins.Network, disc)
-	log = plugins.GetLogger()
-}
-
-func (d *discord) Setup(c *plugins.Connection) error {
-	d.con = c
-	// Load configuration
-	return disc.LoadConfig(c.Dir)
+	disc = &discord{
+		Plugin: plugins.NewPlugin("discord", plugins.Network, []int{events.MESSAGE}),
+	}
+	plugins.RegisterPlugin(disc)
 }
 
 func (d *discord) LoadConfig(location string) error {
 	log.Debug("Loading configuration from " + location)
-	if _, err := toml.DecodeFile(location, &conf); err != nil {
+	if _, err := toml.DecodeFile(location, &d.conf); err != nil {
 		log.Error("Could not load configuration file: " + err.Error())
 		return err
 	}
-	log.Debug("Loaded configuration file with Token: " + conf.Token)
+	log.Debug("Loaded configuration file with Token: " + d.conf.Token)
 	return nil
 }
 
 func (d *discord) Start() (err error) {
+	err = d.LoadConfig(d.Dir())
+	if err != nil {
+		log.Error("Unable to load configuration for " + d.Name())
+	}
 	log.Debug("Connecting to Discord.")
 	// Connect to discord
-	d.session, err = discordgo.New("Bot " + conf.Token)
+	d.session, err = discordgo.New("Bot " + d.conf.Token)
 
 	if err != nil {
 		log.Error(err.Error())

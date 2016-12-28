@@ -17,7 +17,7 @@ func (d *discord) onConnect(s *discordgo.Session, _ *discordgo.Connect) {
 		Type:    events.CONNECTED,
 		Raw:     "Connected to " + g,
 	}
-	disc.con.FromPlugin <- event
+	d.FromPlugin() <- event
 }
 
 func (d *discord) onMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
@@ -53,7 +53,7 @@ func (d *discord) onMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 			Id:   m.Author.ID,
 		},
 	}
-	disc.con.FromPlugin <- event
+	d.FromPlugin() <- event
 }
 
 func (d *discord) onMessageUpdate(s *discordgo.Session, m *discordgo.MessageUpdate) {
@@ -90,7 +90,7 @@ func (d *discord) onMessageUpdate(s *discordgo.Session, m *discordgo.MessageUpda
 			Id:   m.Author.ID,
 		},
 	}
-	disc.con.FromPlugin <- event
+	d.FromPlugin() <- event
 }
 
 func (d *discord) onMessageDelete(s *discordgo.Session, m *discordgo.MessageDelete) {
@@ -126,7 +126,7 @@ func (d *discord) onMessageDelete(s *discordgo.Session, m *discordgo.MessageDele
 			Id:   m.Author.ID,
 		},
 	}
-	disc.con.FromPlugin <- event
+	d.FromPlugin() <- event
 }
 
 func (d *discord) onChannelJoin(s *discordgo.Session, c *discordgo.ChannelCreate) {
@@ -141,7 +141,7 @@ func (d *discord) onChannelJoin(s *discordgo.Session, c *discordgo.ChannelCreate
 		Type:    events.CREATEDCHANNEL,
 	}
 
-	disc.con.FromPlugin <- event
+	d.FromPlugin() <- event
 }
 
 func (d *discord) onGuildMemberAdd(s *discordgo.Session, m *discordgo.Member) {
@@ -174,7 +174,7 @@ func (d *discord) onGuildMemberAdd(s *discordgo.Session, m *discordgo.Member) {
 			Id:   m.User.ID,
 		},
 	}
-	disc.con.FromPlugin <- event
+	d.FromPlugin() <- event
 }
 
 func (d *discord) onGuildMemberExit(s *discordgo.Session, m *discordgo.Member) {
@@ -207,5 +207,5 @@ func (d *discord) onGuildMemberExit(s *discordgo.Session, m *discordgo.Member) {
 			Id:   m.User.ID,
 		},
 	}
-	disc.con.FromPlugin <- event
+	d.FromPlugin() <- event
 }

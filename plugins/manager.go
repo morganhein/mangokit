@@ -4,71 +4,21 @@ import (
 	"os"
 	"strings"
 
-	"path/filepath"
-
 	"github.com/morganhein/mangokit/events"
 )
 
 var Core CoreFramework
-var NetworkPlugins = make(map[*Connection]Plugineers)
-var SkillPlugins = make(map[*Connection]Plugineers)
+var NetworkPlugins = make([]Plugineer, 0)
+var SkillPlugins = make([]Plugineer, 0)
 
-func RegisterPlugin(name string, pluginType int, plugin Plugineers) {
-	switch pluginType {
-	case 0:
-		registerNetworkPlugin(name, plugin)
-	case 1:
-		registerSkillPlugin(name, plugin)
-	}
-}
-
-func registerNetworkPlugin(name string, plugin Plugineers) {
-	c := registerNewPlugin(name, Network)
-
-	if c != nil {
-		NetworkPlugins[c] = plugin
-		c.Plugin = plugin
-	}
-}
-
-func registerSkillPlugin(name string, plugin Plugineers) {
-	c := registerNewPlugin(name, Skill)
-
-	if c != nil {
-		SkillPlugins[c] = plugin
-	}
-}
-
-func registerNewPlugin(name string, t int) *Connection {
-	fromPlugin := make(chan Event, 10)
-	toPlugin := make(chan Event, 10)
-
-	// todo: enable this later, for actual builds
-	//dir, err := osext.ExecutableFolder();
-	//Brain.log.Debug(dir)
-	// todo: for now, we'll use this in our build environment
-	dir, err := os.Getwd()
-	if err != nil {
-		Log.Error("Unable to find the current working directory.")
-		return nil
-	}
-
-	switch t {
+func RegisterPlugin(p Plugineer) {
+	log.Debug("Registering plugin: " + p.Name())
+	switch p.Category() {
 	case Network:
-		dir = filepath.Join(dir, "plugins", "networks", name, "config.toml")
+		NetworkPlugins = append(NetworkPlugins, p)
 	case Skill:
-		dir = filepath.Join(dir, "plugins", "skills", name, "config.toml")
+		SkillPlugins = append(SkillPlugins, p)
 	}
-	Log.Debug("Creating plugin from dir: " + dir)
-
-	c := &Connection{
-		Name:       name,
-		ToPlugin:   toPlugin,
-		FromPlugin: fromPlugin,
-		Type:       t,
-		Dir:        dir,
-	}
-	return c
 }
 
 func PopulateCmd(e *Event) error {
@@ -82,7 +32,7 @@ func PopulateCmd(e *Event) error {
 	}
 	e.Cmd = e.Raw[1:]
 	e.Type = events.BOTCMD
-	Log.Debug("Found a new command: " + e.Cmd)
+	log.Debug("Found a new command: " + e.Cmd)
 	return nil
 }
 

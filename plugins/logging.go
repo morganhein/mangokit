@@ -7,7 +7,7 @@ import (
 )
 
 // Log is a reference to the active logger
-var Log = makeLogger()
+var log = makeLogger()
 
 func makeLogger() Logger {
 	l := logging.MustGetLogger("mango")
@@ -23,7 +23,7 @@ func makeLogger() Logger {
 
 // GetLogger retrieves the active Logger
 func GetLogger() Logger {
-	return Log
+	return log
 }
 
 // func Critical(args ...interface{}) {

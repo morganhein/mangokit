@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/url"
-	"path"
 	"strings"
 	"time"
 
@@ -41,38 +40,34 @@ type config struct {
 
 type smalltalk struct {
 	*plugins.Plugin
-	conn   *plugins.Connection
-	config config
+	conf config
 }
 
+var log = plugins.GetLogger()
 var server *smalltalk
 
 func init() {
-	server = &smalltalk{}
-	plugins.RegisterPlugin("smalltalk", plugins.Skill, server)
-}
-
-func (s *smalltalk) Setup(c *plugins.Connection) error {
-	err := s.LoadConfig(c.Dir)
-	c.Events = []int{events.BOTCMD}
-	if err != nil {
-		return err
+	server = &smalltalk{
+		Plugin: plugins.NewPlugin("smalltalk", plugins.Skill, []int{events.BOTCMD}),
 	}
-	s.conn = c
-	// s.config.api = "https://api.api.ai/v1/query?lang=en&v=20150910&sessionId=123&query="
-	s.config.api = "https://api.api.ai/v1/query?lang=en&v=20150910&sessionId="
-	return nil
+	plugins.RegisterPlugin(server)
 }
 
 func (s *smalltalk) Start() error {
 	log.Debug("Smalltalk started.")
+	err := s.LoadConfig(s.Dir())
+	if err != nil {
+		log.Error("Unable to load configuration for " + s.Name())
+	}
+	s.conf.api = "https://api.api.ai/v1/query?lang=en&v=20150910&sessionId="
+
 	for {
 		select {
-		case e := <-s.conn.ToPlugin:
+		case e := <-s.ToPlugin():
 			if strings.HasPrefix(e.Cmd, "?") {
 				msg := e.Cmd[1:]
 				log.Debug("Requesting a new thought.")
-				t, err := s.requestThought(s.config.api, e.Who.Id, msg)
+				t, err := s.requestThought(s.conf.api, e.Who.Id, msg)
 				if err != nil {
 					log.Error("Error retrieving a thought. Try thinking harder.")
 					return err
@@ -85,24 +80,23 @@ func (s *smalltalk) Start() error {
 
 func (s *smalltalk) LoadConfig(location string) error {
 	log.Debug("Loading configuration from " + location)
-	if _, err := toml.DecodeFile(location, &s.config); err != nil {
+	if _, err := toml.DecodeFile(location, &s.conf); err != nil {
 		log.Error("Could not load configuration file: " + err.Error())
 		return err
 	}
-	log.Debug("Loaded configuration file with Token: " + s.config.Token)
+	log.Debug("Loaded configuration file with Token: " + s.conf.Token)
 	return nil
 }
 
 func (s *smalltalk) requestThought(api, session, msg string) (*thought, error) {
 	// The URL parsing is so the mockHTTP testing works
-	u, err := url.Parse(api)
-	u.Path = path.Join(u.Path, session, "&query=", url.QueryEscape(msg))
+	path := api + session + "&query=" + url.QueryEscape(msg)
 
-	log.Debug("Requesting: " + u.String())
+	log.Debug("Requesting: " + path)
 
 	client := &http.Client{}
-	req, _ := http.NewRequest("GET", u.String(), nil)
-	req.Header.Set("Authorization", "Bearer "+s.config.Token)
+	req, _ := http.NewRequest("GET", path, nil)
+	req.Header.Set("Authorization", "Bearer "+s.conf.Token)
 	response, err := client.Do(req)
 
 	if err != nil {
