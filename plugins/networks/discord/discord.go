@@ -75,7 +75,8 @@ func (d *discord) Start() (err error) {
 	d.session.AddHandler(d.onMessage)
 	d.session.AddHandler(d.onMessageDelete)
 	d.session.AddHandler(d.onMessageUpdate)
-	//todo: join/part event handlers
+	d.session.AddHandler(d.onGuildMemberAdd)
+	d.session.AddHandler(d.onGuildMemberExit)
 
 	log.Debug("Discord started.")
 	// Open the websocket connection.

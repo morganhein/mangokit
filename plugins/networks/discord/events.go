@@ -101,26 +101,26 @@ func (d *discord) onMessageDelete(s *discordgo.Session, m *discordgo.MessageDele
 
 	log.Debug("Deleted message from: " + m.Author.Username + ":" + m.Author.ID)
 
-	cid, err := s.Channel(m.ChannelID)
+	ch, err := s.Channel(m.ChannelID)
 
 	if err != nil {
 		//todo: maybe some better checking here?
-		cid, _ = s.Channel(m.Message.ChannelID)
+		ch, _ = s.Channel(m.Message.ChannelID)
 	}
 
-	if cid == nil {
+	if ch == nil {
 		log.Warning("Unable to determine channel ID for deleted message.")
 	}
 
 	channel := &channel{
 		s: s,
-		c: cid,
+		c: ch,
 	}
 
 	event := plugins.Event{
 		Time:    time.Now(),
 		Context: channel,
-		Type:    events.DELETEMESSAGE,
+		Type:    events.DESTROYMESSAGE,
 		Who: &plugins.Who{
 			Name: m.Author.Username,
 			Id:   m.Author.ID,
@@ -141,5 +141,71 @@ func (d *discord) onChannelJoin(s *discordgo.Session, c *discordgo.ChannelCreate
 		Type:    events.CREATEDCHANNEL,
 	}
 
+	disc.con.FromPlugin <- event
+}
+
+func (d *discord) onGuildMemberAdd(s *discordgo.Session, m *discordgo.Member) {
+	// Ignore all events created by the bot itself
+	if m.User.ID == d.me.ID {
+		return
+	}
+
+	// get the welcome channel for that guild
+	ch, err := s.Channel(m.GuildID)
+	if err != nil {
+		return
+	}
+
+	if ch == nil {
+		log.Warning("Unable to determine default channel ID. This event cannot be handled.")
+	}
+
+	channel := &channel{
+		s: s,
+		c: ch,
+	}
+
+	event := plugins.Event{
+		Time:    time.Now(),
+		Context: channel,
+		Type:    events.JOINEDSERVER,
+		Who: &plugins.Who{
+			Name: m.User.Username,
+			Id:   m.User.ID,
+		},
+	}
+	disc.con.FromPlugin <- event
+}
+
+func (d *discord) onGuildMemberExit(s *discordgo.Session, m *discordgo.Member) {
+	// Ignore all events created by the bot itself
+	if m.User.ID == d.me.ID {
+		return
+	}
+
+	// get the welcome channel for that guild
+	ch, err := s.Channel(m.GuildID)
+	if err != nil {
+		return
+	}
+
+	if ch == nil {
+		log.Warning("Unable to determine default channel ID. This event cannot be handled.")
+	}
+
+	channel := &channel{
+		s: s,
+		c: ch,
+	}
+
+	event := plugins.Event{
+		Time:    time.Now(),
+		Context: channel,
+		Type:    events.EXITEDSERVER,
+		Who: &plugins.Who{
+			Name: m.User.Username,
+			Id:   m.User.ID,
+		},
+	}
 	disc.con.FromPlugin <- event
 }
