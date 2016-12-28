@@ -34,7 +34,7 @@ type Plugineers interface {
 	// Start/Connect the network service/skill (will be run via go Start())
 	Start() error
 	// Get a context for a channel, user, board, group, guild, etc
-	GetContext(interface{}) (Contexter, error)
+	// GetContext(interface{}) (Contexter, error) //todo: later if desired
 	// Disconnect from the network service
 	Disconnect() error
 	// Status of the connection

@@ -1,7 +1,6 @@
 package mangokit
 
 import (
-	"github.com/morganhein/mangokit/log"
 	"github.com/morganhein/mangokit/plugins"
 	_ "github.com/morganhein/mangokit/plugins/networks/discord" // all blank imports register the plugin
 	_ "github.com/morganhein/mangokit/plugins/skills/brain"

@@ -5,7 +5,6 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/bwmarrin/discordgo"
-	"github.com/morganhein/mangokit/log"
 	"github.com/morganhein/mangokit/plugins"
 )
 
@@ -30,9 +29,12 @@ type config struct {
 	Owner    string
 }
 
+var log plugins.Logger
+
 func init() {
 	disc = &discord{}
 	plugins.RegisterPlugin("discord", plugins.Network, disc)
+	log = plugins.GetLogger()
 }
 
 func (d *discord) Setup(c *plugins.Connection) error {
@@ -71,6 +73,10 @@ func (d *discord) Start() (err error) {
 	// Attach event handlers
 	d.session.AddHandler(d.onConnect)
 	d.session.AddHandler(d.onMessage)
+	d.session.AddHandler(d.onMessageDelete)
+	d.session.AddHandler(d.onMessageUpdate)
+	//todo: join/part event handlers
+
 	log.Debug("Discord started.")
 	// Open the websocket connection.
 	err = d.session.Open()
@@ -99,10 +105,6 @@ func (d *discord) connect() error {
 func (d *discord) Connected() bool {
 	// todo: actually implement this
 	return true
-}
-
-func (d *discord) GetContext(search interface{}) (plugins.Contexter, error) {
-	return nil, nil
 }
 
 func (d *discord) getChannelByName(guild, channel string) (*discordgo.Channel, error) {

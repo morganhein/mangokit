@@ -1,7 +1,5 @@
 package plugins
 
-import "github.com/morganhein/mangokit/log"
-
 // Plugin is the base type for all plugins
 type Plugin struct{}
 
@@ -29,11 +27,6 @@ func (p *Plugin) Start() error {
 	return nil
 }
 
-// GetContext finds a Contexter, implementation dependant on the network
-func (p *Plugin) GetContext(interface{}) (Contexter, error) {
-	return nil, nil
-}
-
 // Disconnect should close all network sessions
 func (p *Plugin) Disconnect() error {
 	return nil
@@ -51,7 +44,7 @@ func (p *Plugin) Reconnect() error {
 
 // LoadConfig forcefully loads a config from the passed location.
 func (p *Plugin) LoadConfig(location string) error {
-	log.Debug("Loading configuration from " + location)
+	Log.Debug("Loading configuration from " + location)
 	return nil
 }
 

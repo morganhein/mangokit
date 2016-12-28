@@ -5,7 +5,6 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/morganhein/mangokit/events"
-	"github.com/morganhein/mangokit/log"
 	"github.com/morganhein/mangokit/plugins"
 )
 
@@ -49,6 +48,79 @@ func (d *discord) onMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 		Context: channel,
 		Type:    events.MESSAGE,
 		Raw:     m.Message.Content,
+		Who: &plugins.Who{
+			Name: m.Author.Username,
+			Id:   m.Author.ID,
+		},
+	}
+	disc.con.FromPlugin <- event
+}
+
+func (d *discord) onMessageUpdate(s *discordgo.Session, m *discordgo.MessageUpdate) {
+	// Ignore all messages created by the bot itself
+	if m.Author.ID == disc.me.ID {
+		return
+	}
+
+	log.Debug("Received updated message from: " + m.Author.Username + ":" + m.Author.ID)
+
+	cid, err := s.Channel(m.ChannelID)
+
+	if err != nil {
+		//todo: maybe some better checking here?
+		cid, _ = s.Channel(m.Message.ChannelID)
+	}
+
+	if cid == nil {
+		log.Warning("Unable to determine channel ID for updated message.")
+	}
+
+	channel := &channel{
+		s: s,
+		c: cid,
+	}
+
+	event := plugins.Event{
+		Time:    time.Now(),
+		Context: channel,
+		Type:    events.UPDATEMESSAGE,
+		Raw:     m.Message.Content,
+		Who: &plugins.Who{
+			Name: m.Author.Username,
+			Id:   m.Author.ID,
+		},
+	}
+	disc.con.FromPlugin <- event
+}
+
+func (d *discord) onMessageDelete(s *discordgo.Session, m *discordgo.MessageDelete) {
+	// Ignore all messages created by the bot itself
+	if m.Author.ID == disc.me.ID {
+		return
+	}
+
+	log.Debug("Deleted message from: " + m.Author.Username + ":" + m.Author.ID)
+
+	cid, err := s.Channel(m.ChannelID)
+
+	if err != nil {
+		//todo: maybe some better checking here?
+		cid, _ = s.Channel(m.Message.ChannelID)
+	}
+
+	if cid == nil {
+		log.Warning("Unable to determine channel ID for deleted message.")
+	}
+
+	channel := &channel{
+		s: s,
+		c: cid,
+	}
+
+	event := plugins.Event{
+		Time:    time.Now(),
+		Context: channel,
+		Type:    events.DELETEMESSAGE,
 		Who: &plugins.Who{
 			Name: m.Author.Username,
 			Id:   m.Author.ID,

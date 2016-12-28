@@ -49,7 +49,7 @@ func registerNewPlugin(name string, t int) *Connection {
 	// todo: for now, we'll use this in our build environment
 	dir, err := os.Getwd()
 	if err != nil {
-		log.Error("Unable to find the current working directory.")
+		Log.Error("Unable to find the current working directory.")
 		return nil
 	}
 
@@ -59,7 +59,7 @@ func registerNewPlugin(name string, t int) *Connection {
 	case Skill:
 		dir = filepath.Join(dir, "plugins", "skills", name, "config.toml")
 	}
-	log.Debug("Creating plugin from dir: " + dir)
+	Log.Debug("Creating plugin from dir: " + dir)
 
 	c := &Connection{
 		Name:       name,
@@ -82,7 +82,7 @@ func PopulateCmd(e *Event) error {
 	}
 	e.Cmd = e.Raw[1:]
 	e.Type = events.BOTCMD
-	log.Debug("Found a new command: " + e.Cmd)
+	Log.Debug("Found a new command: " + e.Cmd)
 	return nil
 }
 

@@ -59,7 +59,8 @@ func (s *smalltalk) Setup(c *plugins.Connection) error {
 		return err
 	}
 	s.conn = c
-	s.config.api = "https://api.api.ai/v1/query?lang=en&v=20150910&sessionId=123&query="
+	// s.config.api = "https://api.api.ai/v1/query?lang=en&v=20150910&sessionId=123&query="
+	s.config.api = "https://api.api.ai/v1/query?lang=en&v=20150910&sessionId="
 	return nil
 }
 
@@ -71,7 +72,7 @@ func (s *smalltalk) Start() error {
 			if strings.HasPrefix(e.Cmd, "?") {
 				msg := e.Cmd[1:]
 				log.Debug("Requesting a new thought.")
-				t, err := s.requestThought(s.config.api, msg)
+				t, err := s.requestThought(s.config.api, e.Who.Id, msg)
 				if err != nil {
 					log.Error("Error retrieving a thought. Try thinking harder.")
 					return err
@@ -92,10 +93,10 @@ func (s *smalltalk) LoadConfig(location string) error {
 	return nil
 }
 
-func (s *smalltalk) requestThought(api, msg string) (*thought, error) {
+func (s *smalltalk) requestThought(api, session, msg string) (*thought, error) {
 	// The URL parsing is so the mockHTTP testing works
 	u, err := url.Parse(api)
-	u.Path = path.Join(u.Path, url.QueryEscape(msg))
+	u.Path = path.Join(u.Path, session, "&query=", url.QueryEscape(msg))
 
 	log.Debug("Requesting: " + u.String())
 

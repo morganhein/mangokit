@@ -10,7 +10,7 @@ import (
 var Log = makeLogger()
 
 func makeLogger() Logger {
-	l = logging.MustGetLogger("mango")
+	l := logging.MustGetLogger("mango")
 	var format = logging.MustStringFormatter(
 		`%{color}%{time:15:04:05.000} %{shortfunc} ▶ %{level:.4s} %{id:03x}%{color:reset} %{message}`,
 	)

@@ -5,7 +5,6 @@ import (
 	"sync"
 
 	"github.com/morganhein/mangokit/events"
-	"github.com/morganhein/mangokit/log"
 	"github.com/morganhein/mangokit/plugins"
 	"github.com/morganhein/stacknqueue"
 )
